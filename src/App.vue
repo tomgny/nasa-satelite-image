@@ -34,7 +34,7 @@
                 <img
                     id="nasa"
                     :src="imageUrl"
-                    alt=""
+                    alt="NASA Image"
                     class="img-fluid"
                     style="max-height: 500px"
                 />
@@ -46,10 +46,13 @@
 
 <script>
 import axios from 'axios';
-import Loading from './Loading.vue';
+import Loading from './Loading';
 
 export default {
     name: 'app',
+    components: {
+        appLoading: Loading
+    },
     data() {
         return {
             apiKey: 'fQfbALf3bePjznQrwTMlf3TRLpHoEFQCfBmG4s4U',
@@ -80,44 +83,40 @@ export default {
             try {
                 if (!this.selectedLocation) {
                     return alert('Select the city!');
-                } else {
-                    this.isLoading = true;
-                    const { data } = await axios.get(this.nasaString, {
-                        responseType: 'arraybuffer',
-                        params: {
-                            lat: this.lat,
-                            lon: this.lon,
-                            dim: 0.1,
-                            api_key: this.apiKey
-                        }
-                    });
-                    if (this.myMap) {
-                        this.myMap.remove();
-                    }
-                    this.myMap = L.map('mapid').setView(
-                        [this.lat, this.lon],
-                        13
-                    );
-
-                    L.tileLayer(
-                        'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
-                        {
-                            attribution:
-                                'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                            maxZoom: 18,
-                            id: 'mapbox/streets-v11',
-                            tileSize: 512,
-                            zoomOffset: -1,
-                            accessToken: this.mapboxToken
-                        }
-                    ).addTo(this.myMap);
-
-                    this.imageUrl = window.URL.createObjectURL(
-                        new Blob([data])
-                    );
-                    this.showMaps = true;
-                    this.isLoading = false;
                 }
+
+                this.isLoading = true;
+                const { data } = await axios.get(this.nasaString, {
+                    responseType: 'arraybuffer',
+                    params: {
+                        lat: this.lat,
+                        lon: this.lon,
+                        dim: 0.1,
+                        api_key: this.apiKey
+                    }
+                });
+
+                if (this.myMap) {
+                    this.myMap.remove();
+                }
+
+                this.myMap = L.map('mapid').setView([this.lat, this.lon], 13);
+                L.tileLayer(
+                    'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
+                    {
+                        attribution:
+                            'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                        maxZoom: 18,
+                        id: 'mapbox/streets-v11',
+                        tileSize: 512,
+                        zoomOffset: -1,
+                        accessToken: this.mapboxToken
+                    }
+                ).addTo(this.myMap);
+
+                this.imageUrl = window.URL.createObjectURL(new Blob([data]));
+                this.showMaps = true;
+                this.isLoading = false;
             } catch (error) {
                 console.log(error);
             }
@@ -145,16 +144,12 @@ export default {
                                 t => t.display_name === value.display_name
                             ) === index
                     );
-                    console.log(data);
                     this.isLoading = false;
                 } catch (error) {
                     console.log(error);
                 }
             }, 500);
         }
-    },
-    components: {
-        appLoading: Loading
     }
 };
 </script>
